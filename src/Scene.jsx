@@ -1,4 +1,4 @@
-import { Canvas, } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import {
   OrbitControls,
   TransformControls,
@@ -13,7 +13,7 @@ import {
   Sky,
   Environment,
   Lightformer,
-  Stage
+  Stage,
 } from '@react-three/drei';
 import Sphere from './components/Sphere';
 import Box from './components/Box';
@@ -21,27 +21,33 @@ import Face from './components/Face';
 import Floor from './components/Floor';
 import CustomObject from './components/CustomObject';
 import * as THREE from 'three';
-import { useRef } from 'react';
+//import { useRef } from 'react';
 import { Mesh } from 'three';
-// import { useControls, 
-//   // button 
+import Model from './components/Model';
+import { Suspense } from 'react';
+import Placeholder from './components/Placeholder';
+import { Man } from './components/Man';
+import WordBall from './components/WordBall';
+import BouncingBalls from './components/BouncingBalls';
+// import { useControls,
+//   // button
 
 // } from 'leva';
 import { Perf } from 'r3f-perf';
 
 export default function Scene() {
   // const cameraRef = useRef();
-    // const controls = useControls({
-    //   position: -2,
-    // })
+  // const controls = useControls({
+  //   position: -2,
+  // })
   // //change background color
   // const created=({gl, scene})=>{
   //   gl.setClearColor('#ffff00',1) // one way of setting backgroundcolor using gl
   //   scene.background = new THREE.Color('purple'); //other way of setting background color using scene
   // }
-  const sphereRef = useRef();
-  
- const perfVisible =false;
+  // const sphereRef = useRef();
+
+  const perfVisible = true;
   // const { perfVisible } = useControls({ perfVisible: true });
   // const { position, color, visible } = useControls('sphere folder', {
   //   visible: true,
@@ -98,8 +104,8 @@ export default function Scene() {
         }}
         resolution={32}
       > */}
-        {/* <color args={['black']} attach='background' /> */}
-        {/* <Lightformer
+      {/* <color args={['black']} attach='background' /> */}
+      {/* <Lightformer
           position-z={-5}
           scale={5}
           form='ring'
@@ -107,7 +113,7 @@ export default function Scene() {
           color='red'
           intensity={100}
         /> */}
-        {/* <mesh position-z={-5} scale={8}>
+      {/* <mesh position-z={-5} scale={8}>
           <planeGeometry />
           <meshBasicMaterial color={[10,0,0]} />
         </mesh> */}
@@ -119,6 +125,8 @@ export default function Scene() {
         position={sunPosition}
         intensity={2.1}
         castShadow
+        shadow-normalBias={0.001}
+        shadow-bias={0.001}
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
         shadow-camera-far={10}
@@ -223,21 +231,32 @@ export default function Scene() {
         /> */}
       {/* </mesh> */}
       {perfVisible && <Perf position='top-left' />}
-      <Stage adjustCamera= {[3.5]} intensity={1.5} environment="studio" shadows={{type:'contact', preset:'upfront'}} >
-      <mesh
-        castShadow
-        ref={sphereRef}
-        position={[0, 1, 0]}
-        scale={1}
-        visible={true}
+      <Stage
+        adjustCamera={[4.5]}
+        intensity={1.5}
+        environment={null}
+        shadows={{ type: 'contact', preset: 'upfront' }}
       >
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshStandardMaterial color='turquoise' />
-      </mesh>
-      <Box/>
-      <Face position={[3,4,0]} />
-      {/* <Face position={[-3,4,0]} /> */}
-      {/* <mesh
+        {/* <mesh
+          castShadow
+          ref={sphereRef}
+          position={[0, 1, 0]}
+          scale={1}
+          visible={true}
+        >
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshStandardMaterial color='turquoise' />
+        </mesh> */}
+        {/* <Box /> */}
+        <Suspense fallback={<Placeholder position-y={0.5} scale={[2, 3, 2]} />}>
+          {/* <Model /> */}
+          <Man scale={0.5} />
+          {/* <WordBall /> */}
+          <BouncingBalls />
+        </Suspense>
+        {/* <Face position={[3, 4, 0]} /> */}
+        {/* <Face position={[-3,4,0]} /> */}
+        {/* <mesh
         castShadow
          position={[position.x , position.y+1.7, 0]}
         scale={1.5}
@@ -246,8 +265,8 @@ export default function Scene() {
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color='crimson'/>
       </mesh> */}
-      <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
-    </Stage >
+        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
+      </Stage>
     </Canvas>
   );
 }
