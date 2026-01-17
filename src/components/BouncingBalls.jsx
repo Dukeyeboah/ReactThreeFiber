@@ -35,7 +35,10 @@ function generateBallData(count) {
   }));
 }
 
-export default function BouncingBalls({ position = [0, 0, 0], count = 50 }) {
+export default function BouncingBalls(
+  { 
+    // position = [0, 0, 0], 
+  count = 50 }) {
   const ball1ref = useRef();
   const ball2ref = useRef();
   const bouncingBallsRef = useRef();
@@ -69,6 +72,7 @@ export default function BouncingBalls({ position = [0, 0, 0], count = 50 }) {
     // Animate bouncing balls with unique properties for each
     if (bouncingBallsRef.current) {
       bouncingBallsRef.current.children.forEach((child, index) => {
+        //   bouncingBallsRef.current.forEach((child, index) => {
         const data = ballsData[index];
         const time = state.clock.elapsedTime * data.speed + data.phase;
 
@@ -85,18 +89,19 @@ export default function BouncingBalls({ position = [0, 0, 0], count = 50 }) {
   return (
     <>
       {/* sphere geometry */}
-      <mesh ref={ball1ref} position={position} scale={0.5}>
+      {/* <mesh ref={ball1ref} position={position} scale={0.5}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshStandardMaterial color='pink' />
       </mesh>
       <mesh ref={ball2ref} position={[-3, 4, 0]} scale={0.5}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshStandardMaterial color='pink' />
-      </mesh>
+      </mesh> */}
 
       <group ref={bouncingBallsRef}>
         {ballsData.map((data, index) => (
           <mesh
+            //ref={(element) => (bouncingBallsRef.current[index] = element)}
             key={index}
             geometry={sphereGeometry}
             position={data.initialPosition}

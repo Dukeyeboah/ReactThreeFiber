@@ -14,6 +14,7 @@ import {
   Environment,
   Lightformer,
   Stage,
+  Sparkles,
 } from '@react-three/drei';
 import Sphere from './components/Sphere';
 import Box from './components/Box';
@@ -29,6 +30,8 @@ import Placeholder from './components/Placeholder';
 import { Man } from './components/Man';
 import WordBall from './components/WordBall';
 import BouncingBalls from './components/BouncingBalls';
+import Shader from './components/Shader';
+import FlagShader from './components/FlagShader';
 // import { useControls,
 //   // button
 
@@ -81,6 +84,7 @@ export default function Scene() {
   // })
   return (
     <Canvas
+      flat
       // gl={ {
       //     antialias: true,
       //     toneMapping: THREE.CineonToneMapping
@@ -92,7 +96,7 @@ export default function Scene() {
       style={{ width: '100%', height: '100vh' }}
       // onCreated={created}
     >
-      <color attach='background' args={['ivory']} />
+      <color attach='background' args={['black']} />
       {/* <Environment
         //background
         // files={'/textures/cube/px.hdr'}
@@ -232,7 +236,7 @@ export default function Scene() {
       {/* </mesh> */}
       {perfVisible && <Perf position='top-left' />}
       <Stage
-        adjustCamera={[4.5]}
+        adjustCamera={[1.5]}
         intensity={1.5}
         environment={null}
         shadows={{ type: 'contact', preset: 'upfront' }}
@@ -250,9 +254,12 @@ export default function Scene() {
         {/* <Box /> */}
         <Suspense fallback={<Placeholder position-y={0.5} scale={[2, 3, 2]} />}>
           {/* <Model /> */}
-          <Man scale={0.5} />
+          {/* <Man scale={0.5} /> */}
           {/* <WordBall /> */}
-          <BouncingBalls />
+          {/* <BouncingBalls /> */}
+          {/* <Sparkles scale={2} speed={0.001} count={100} size={2} color='pink' noise={0.2} noiseSeed={1} /> */}
+          {/* <Shader /> */}
+          <FlagShader />
         </Suspense>
         {/* <Face position={[3, 4, 0]} /> */}
         {/* <Face position={[-3,4,0]} /> */}
