@@ -32,6 +32,7 @@ import WordBall from './components/WordBall';
 import BouncingBalls from './components/BouncingBalls';
 import Shader from './components/Shader';
 import FlagShader from './components/FlagShader';
+import WavyBall from './components/WavyBall';
 // import { useControls,
 //   // button
 
@@ -259,7 +260,8 @@ export default function Scene() {
           {/* <BouncingBalls /> */}
           {/* <Sparkles scale={2} speed={0.001} count={100} size={2} color='pink' noise={0.2} noiseSeed={1} /> */}
           {/* <Shader /> */}
-          <FlagShader />
+          {/* <FlagShader /> */}
+          <WavyBall />
         </Suspense>
         {/* <Face position={[3, 4, 0]} /> */}
         {/* <Face position={[-3,4,0]} /> */}
