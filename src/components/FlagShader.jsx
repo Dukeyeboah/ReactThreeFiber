@@ -19,11 +19,21 @@ const MyShaderMaterial = shaderMaterial(
     uColorEnd: new THREE.Color('#000000'),
     uTexture: new THREE.Texture(), // Will be set dynamically
     uUseTexture: 0.0, // 0 = false, 1 = true
+    // UV-based frequency and time controls
+    uUseUVFrequency: 0.0, // 0 = regular frequency, 1 = UV-based frequency
+    uWaveTypeX: 0.0, // 0 = waveX, 1 = waveY, 2 = waveXY, 3 = waveYX, 4 = none
+    uWaveTypeY: 0.0, // 0 = waveX, 1 = waveY, 2 = waveXY, 3 = waveYX, 4 = none
+    uUseUVTime: 0.0, // 0 = regular time, 1 = UV-based time
+    uUVTimeOffset: 2.0, // Amount of UV time offset
+    uUVFreqMinX: 1.0, // Min frequency for UV-based X
+    uUVFreqMaxX: 3.0, // Max frequency for UV-based X
+    uUVFreqMinY: 1.0, // Min frequency for UV-based Y
+    uUVFreqMaxY: 5.0, // Max frequency for UV-based Y
   },
   // Vertex shader comes second
   vertexShader,
   // Fragment shader comes third
-  fragmentShader
+  fragmentShader,
 );
 
 extend({ MyShaderMaterial: MyShaderMaterial });
@@ -54,7 +64,7 @@ export default function Shader() {
       new Uint8Array([255, 255, 255, 255]),
       1,
       1,
-      THREE.RGBAFormat
+      THREE.RGBAFormat,
     );
     return texture;
   }, []);
@@ -69,6 +79,15 @@ export default function Shader() {
     colorEnd,
     textureIndex,
     useTexture,
+    useUVFrequency,
+    waveTypeX,
+    waveTypeY,
+    useUVTime,
+    uvTimeOffset,
+    uvFreqMinX,
+    uvFreqMaxX,
+    uvFreqMinY,
+    uvFreqMaxY,
   } = useControls('Flag Shader', {
     // Wave frequency controls
     frequencyX: {
@@ -82,6 +101,61 @@ export default function Shader() {
       min: 0,
       max: 3,
       step: 0.1,
+    },
+    // UV-based frequency controls
+    useUVFrequency: {
+      value: false,
+      label: 'Use UV-Based Frequency',
+    },
+    waveTypeX: {
+      value: 'waveX',
+      options: ['waveX', 'waveY', 'waveXY', 'waveYX', 'none'],
+      label: 'Wave Type X',
+    },
+    waveTypeY: {
+      value: 'waveY',
+      options: ['waveX', 'waveY', 'waveXY', 'waveYX', 'none'],
+      label: 'Wave Type Y',
+    },
+    uvFreqMinX: {
+      value: 1.0,
+      min: 0,
+      max: 10,
+      step: 0.1,
+      label: 'UV Freq Min X',
+    },
+    uvFreqMaxX: {
+      value: 3.0,
+      min: 0,
+      max: 10,
+      step: 0.1,
+      label: 'UV Freq Max X',
+    },
+    uvFreqMinY: {
+      value: 1.0,
+      min: 0,
+      max: 10,
+      step: 0.1,
+      label: 'UV Freq Min Y',
+    },
+    uvFreqMaxY: {
+      value: 5.0,
+      min: 0,
+      max: 10,
+      step: 0.1,
+      label: 'UV Freq Max Y',
+    },
+    // Time flow controls
+    useUVTime: {
+      value: false,
+      label: 'Use UV-Based Time',
+    },
+    uvTimeOffset: {
+      value: 2.0,
+      min: 0,
+      max: 10,
+      step: 0.1,
+      label: 'UV Time Offset',
     },
     // Animation controls
     animate: {
@@ -118,12 +192,39 @@ export default function Shader() {
     },
   });
 
+  // Convert wave type string to number for shader
+  const waveTypeToNumber = (type) => {
+    switch (type) {
+      case 'waveX':
+        return 0.0;
+      case 'waveY':
+        return 1.0;
+      case 'waveXY':
+        return 2.0;
+      case 'waveYX':
+        return 3.0;
+      case 'none':
+        return 4.0;
+      default:
+        return 0.0;
+    }
+  };
+
   // Update material uniforms when controls change
   useEffect(() => {
     if (materialRef.current) {
       materialRef.current.uFrequency.set(frequencyX, frequencyY);
       materialRef.current.uColorStart.set(colorStart);
       materialRef.current.uColorEnd.set(colorEnd);
+      materialRef.current.uUseUVFrequency = useUVFrequency ? 1.0 : 0.0;
+      materialRef.current.uWaveTypeX = waveTypeToNumber(waveTypeX);
+      materialRef.current.uWaveTypeY = waveTypeToNumber(waveTypeY);
+      materialRef.current.uUseUVTime = useUVTime ? 1.0 : 0.0;
+      materialRef.current.uUVTimeOffset = uvTimeOffset;
+      materialRef.current.uUVFreqMinX = uvFreqMinX;
+      materialRef.current.uUVFreqMaxX = uvFreqMaxX;
+      materialRef.current.uUVFreqMinY = uvFreqMinY;
+      materialRef.current.uUVFreqMaxY = uvFreqMaxY;
 
       // Update texture uniform based on selection
       if (useTexture && textures[textureIndex]) {
@@ -147,6 +248,15 @@ export default function Shader() {
     useTexture,
     textures,
     defaultTexture,
+    useUVFrequency,
+    waveTypeX,
+    waveTypeY,
+    useUVTime,
+    uvTimeOffset,
+    uvFreqMinX,
+    uvFreqMaxX,
+    uvFreqMinY,
+    uvFreqMaxY,
   ]);
 
   // Animate uTime each frame for waving motion (if animate is enabled)
