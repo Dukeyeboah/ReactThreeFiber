@@ -1,39 +1,110 @@
-import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, Sparkles } from '@react-three/drei';
-import { Suspense } from 'react';
-import Placeholder from './components/Placeholder';
-import FlagShader from './components/FlagShader';
+import { Leva } from 'leva';
+import Begin from './components/Begin';
+import { OrbitControls, Stage } from '@react-three/drei';
+import { Man } from './components/Man';
+import RagingSea from './components/RagingSea';
 import TestShaders from './components/TestShaders';
-import { Perf } from 'r3f-perf';
+import PhysicalMaterialShaders from './components/PhysicalMaterialShaders';
+import ScreenShaderTest from './components/ScreenShaderTest';
 
 export default function Scene() {
-  const perfVisible = true;
   return (
-    <Canvas
+    <>
+      <Leva collapsed />
+      <Canvas
+        flat
+        shadows={true}
+        camera={{ position: [0, 0, -10], fov: 45, near: 0.1, far: 1000 }}
+        style={{ width: '100%', height: '100vh' }}
+      >
+        <color attach='background' args={['white']} />
+        {/* <Stage
+          adjustCamera={[1.5]}
+          intensity={1.5}
+          environment={{
+            preset: 'dawn',
+            background: false,
+            environmentIntensity: 1.25,
+          }}
+          shadows={{ type: 'contact', preset: 'upfront' }}
+        > */}
+          {/* <PhysicalMaterialShaders /> */}
+          {/* <Begin /> */}
+          {/* <TestShaders /> */}
+          {/* <Man/> */}
+          {/* <RagingSea/> */}
+          <ScreenShaderTest />
+        {/* </Stage> */}
+        {/* <OrbitControls makeDefault enableDamping dampingFactor={0.05} /> */}
+      </Canvas>
+    </>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import { OrbitControls, Stage, } from '@react-three/drei';
+// import { Suspense } from 'react';
+
+{
+  /* <Canvas
       flat
       shadows={true}
       camera={{ position: [0, 0, 10], fov: 45, near: 0.1, far: 1000 }}
       style={{ width: '100%', height: '100vh' }}
-    >
-      <color attach='background' args={['black']} />
-      {perfVisible && <Perf position='top-left' />}
-      <Stage
-        adjustCamera={[1.5]}
-        intensity={1.5}
-        environment={null}
-        shadows={{ type: 'contact', preset: 'upfront' }}
-      >
-        <Suspense fallback={<Placeholder position-y={0.5} scale={[2, 3, 2]} />}>
-          {/* <FlagShader /> */}
-          <TestShaders />
-        </Suspense>
-        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
-      </Stage>
-    </Canvas>
-  );
+    ></Canvas> */
 }
 
+// {/* <color attach='background' args={['black']} />
+//       {/* {perfVisible && <Perf position='top-left' />} */}
+//       <Stage
+//         adjustCamera={[1.5]}
+//         intensity={1.5}
+//         environment={null}
+//         shadows={{ type: 'contact', preset: 'upfront' }}
+//       >
+//         <Suspense fallback={<Placeholder position-y={0.5} scale={[2, 3, 2]} />}>
+//           <Begin />
+//         </Suspense>
+//         <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
+//       </Stage> */}
+
+{
+  /* <FlagShader /> */
+}
+{
+  /* <TestShaders /> */
+}
+{
+  /* <RagingSea /> */
+}
+
+{
+  /* <Suspense fallback={<Placeholder position-y={0.5} scale={[2, 3, 2]} />}> */
+}
+
+// const perfVisible = true;
+// import Placeholder from './components/Placeholder';
+// import RagingSea from './components/RagingSea';
+// import * as THREE from 'three';
+// import { Perf } from 'r3f-perf';
 // previous setup with commented stuff
 
 // import { Canvas } from '@react-three/fiber';

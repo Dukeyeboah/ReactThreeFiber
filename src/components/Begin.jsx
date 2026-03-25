@@ -1,43 +1,46 @@
-import testPatternsVertexShader from '../shaders/testpatterns/vertex.glsl?raw';
-import testPatternsFragmentShader from '../shaders/testpatterns/fragment.glsl?raw';
-import { shaderMaterial } from '@react-three/drei';
-import { extend, useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
-
 import * as THREE from 'three';
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import beginVertexShader from '../shaders/beginShaders/vertex.glsl?raw';
+import beginFragmentShader from '../shaders/beginShaders/fragment.glsl?raw';
+import { shaderMaterial } from '@react-three/drei';
+import { extend } from '@react-three/fiber';
 
-const TestPatternsShaderMaterial = shaderMaterial(
+const BeginShaderMaterial = shaderMaterial(
   {
     uTime: 0,
     uResolution: [window.innerWidth, window.innerHeight],
     uMouse: [0, 0],
-    // wireframe:true,
     side: THREE.DoubleSide,
   },
-  testPatternsVertexShader,
-  testPatternsFragmentShader,
+  beginVertexShader,
+  beginFragmentShader
 );
-extend({ TestPatternsShaderMaterial: TestPatternsShaderMaterial });
+extend({ BeginShaderMaterial: BeginShaderMaterial });
 
-export default function Shader() {
+export default function Begin() {
+ 
   const materialRef = useRef();
   useFrame((state) => {
-    // console.log(state)
     if (materialRef.current) {
       materialRef.current.uTime = state.clock.elapsedTime;
-      
+      materialRef.current.uResolution = [window.innerWidth, window.innerHeight];
+      // console.log(materialRef.current.uResolution);
+
+      // console.log(state.pointer.x, state.pointer.y);
     }
   });
+
   return (
     <mesh
-      // ref={meshRef}
-      receiveShadow
-      position={[0, -1.5, 0]}
-      scale={[13, 13, 0.2]}
+      position={[0, -1.5, -0.5]}
+      scale={[10, 10, 10]}
+    //   rotation={[-Math.PI / 2, 0, 0]}
     >
-      <planeGeometry args={[2, 2, 64, 64]} />
-      <testPatternsShaderMaterial ref={materialRef} />
-      {/* <meshStandardMaterial color='red' wireframe /> */}
+      {/* <planeGeometry args={[2, 2, 32,32]} /> */}
+      <planeGeometry args={[2, 2,32,32]} />
+      {/* <meshBasicMaterial color='blue' side={THREE.DoubleSide} /> */}
+      <beginShaderMaterial ref={materialRef} />
     </mesh>
   );
 }
@@ -52,6 +55,37 @@ export default function Shader() {
 
 
 
+
+
+
+
+
+
+
+// import { shaderMaterial } from '@react-three/drei';
+// import { extend, useFrame } from '@react-three/fiber';
+// import { useRef } from 'react';
+// import beginVertexShader from '../shaders/beginShaders/vertex.glsl?raw';
+// import beginFragmentShader from '../shaders/beginShaders/fragment.glsl?raw';
+
+// const BeginShaderMaterial = shaderMaterial(
+//     {
+//       uTime: 0,
+//       // wireframe:true,
+//     },
+//     beginVertexShader,
+//     beginFragmentShader,
+//   );
+//   extend({ BeginShaderMaterial: BeginShaderMaterial });
+
+// const materialRef = useRef();
+// useFrame((state) => {
+//   // console.log(state)
+//   if (materialRef.current) {
+//     materialRef.current.uTime = state.clock.elapsedTime;
+//   }
+// });
+// <beginPatternsShaderMaterial ref={materialRef} />
 
 
 
