@@ -46,7 +46,7 @@ export default function Scene() {
           {/* <HandInteraction landmark="indexTip" handSide="Right" /> */}
           {/* Split: left palm moves sphere, right index pulls vertices (swap hands if mirrored wrong) */}
           <HandInteraction
-            mode='splitRoles'
+            mode='single'
             moveSphereHand='Right'
             vertexPullHand='Left'
             sphereLandmark='palmCenter'
@@ -62,10 +62,10 @@ export default function Scene() {
             targetSmoothing={14}
             outerRadiusFactor={1.8}
             zMoveEnabled
-            // zMoveSource='pinch'
-            zMoveSource='landmarkZ'
-            zMoveZNormalize={0.12}
-            zMoveRange={24}
+            zMoveSource='pinch'
+            // zMoveSource='landmarkZ'
+            // zMoveZNormalize={0.12}
+            zMoveRange={18}
             zPinchDistanceMin={0.02}
             zPinchDistanceMax={0.34}
             zMoveInvert={false}
