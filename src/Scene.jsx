@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Leva } from 'leva';
 import { OrbitControls, Stage } from '@react-three/drei';
@@ -6,14 +7,46 @@ import TeachShaders from './components/TeachShaders';
 import ScreenShaderTest from './components/ScreenShaderTest';
 import FaceInteraction from './components/FaceInteraction';
 import HandInteraction from './components/HandInteraction';
+import {
+  mapHandLevaToProps,
+  useFaceInteractionControls,
+  useHandInteractionControls,
+  useInteractionAppControls,
+} from './interactionLevaControls';
 
-/** Toggle to test hand tracking (turn off ScreenShaderTest / other demos first). */
-const SHOW_HAND_INTERACTION = true;
-
+/**
+ * Leva: root + all folders start collapsed; click a folder title to expand/collapse.
+ *
+ * Hide the panel at runtime: press **`** (backtick) to toggle. To disable by default, set
+ * `useState(false)` below, or remove / comment out `<Leva collapsed />`.
+ */
 export default function Scene() {
+  const [levaVisible, setLevaVisible] = useState(true);
+  const app = useInteractionAppControls();
+  const handLeva = useHandInteractionControls();
+  const faceLeva = useFaceInteractionControls();
+  const handProps = mapHandLevaToProps(handLeva);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== '`' && e.key !== 'Backquote') return;
+      const t = e.target;
+      if (
+        t instanceof HTMLInputElement ||
+        t instanceof HTMLTextAreaElement ||
+        (t instanceof HTMLElement && t.isContentEditable)
+      ) {
+        return;
+      }
+      setLevaVisible((v) => !v);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
     <>
-      <Leva collapsed />
+      {levaVisible ? <Leva collapsed /> : null}
       <Canvas
         flat
         shadows={true}
@@ -32,7 +65,30 @@ export default function Scene() {
           shadows={{ type: 'contact', preset: 'upfront' }}
         >
           {/*<TeachShaders />*/}
-          {/* <ScreenShaderTest /> */}
+          {app.interactionMode === 'hand' ? (
+            <HandInteraction {...handProps} />
+          ) : null}
+          {app.interactionMode === 'face' ? (
+            <FaceInteraction
+              landmark={faceLeva.landmark}
+              mirrorWebcamX={faceLeva.mirrorWebcamX}
+              enableTargetSmoothing={faceLeva.enableTargetSmoothing}
+              targetSmoothing={faceLeva.targetSmoothing}
+            />
+          ) : null}
+          {app.interactionMode === 'mouse' ? <ScreenShaderTest /> : null}
+        </Stage>
+        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
+      </Canvas>
+    </>
+  );
+}
+
+
+
+
+// Hand interaction component:
+{/* <ScreenShaderTest /> */}
           {/* Face: switch landmark + smoothing — see FaceInteraction.jsx file header */}
           {/* <FaceInteraction landmark="noseTip" /> */}
           {/* <FaceInteraction landmark="forehead" /> */}
@@ -45,50 +101,50 @@ export default function Scene() {
           {/* Single hand, right index only (by side): */}
           {/* <HandInteraction landmark="indexTip" handSide="Right" /> */}
           {/* Split: left palm moves sphere, right index pulls vertices (swap hands if mirrored wrong) */}
-          <HandInteraction
-            mode='single'
-            moveSphereHand='Right'
-            vertexPullHand='Left'
-            sphereLandmark='palmCenter'
-            vertexLandmark='indexTip'
-            sphereMoveRange={30}
-            sphereMoveRangeY={16}
-            enableSphereMoveSmoothing
-            sphereMoveSmoothing={10}
-            sphereReturnWhenLost
-            maxHands={2}
-            mirrorWebcamX
-            enableTargetSmoothing
-            targetSmoothing={14}
-            outerRadiusFactor={1.8}
-            zMoveEnabled
-            zMoveSource='pinch'
-            // zMoveSource='landmarkZ'
-            // zMoveZNormalize={0.12}
-            zMoveRange={18}
-            zPinchDistanceMin={0.02}
-            zPinchDistanceMax={0.34}
-            zMoveInvert={false}
-            scaleHand='Left'
-            scaleMin={10}
-            scaleMax={28}
-            pinchDistanceMin={0.02}
-            pinchDistanceMax={0.34}
-            enableScaleSmoothing
-            scaleSmoothing={12}
-            rotateHand='Right'
-            rotateUseWorldLandmarks={false}
-            rotationYawMultiplier={1}
-            enableRotationSmoothing
-            rotationSmoothing={10}
-            rotationReturnWhenLost
-          />
-        </Stage>
-        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
-      </Canvas>
-    </>
-  );
-}
+          // <HandInteraction
+          //   mode='single'
+          //   moveSphereHand='Right'
+          //   vertexPullHand='Left'
+          //   sphereLandmark='palmCenter'
+          //   vertexLandmark='indexTip'
+          //   sphereMoveRange={30}
+          //   sphereMoveRangeY={16}
+          //   enableSphereMoveSmoothing
+          //   sphereMoveSmoothing={10}
+          //   sphereReturnWhenLost
+          //   maxHands={2}
+          //   mirrorWebcamX
+          //   enableTargetSmoothing
+          //   targetSmoothing={14}
+          //   outerRadiusFactor={1.8}
+          //   zMoveEnabled
+          //   zMoveSource='pinch'
+          //   // zMoveSource='landmarkZ'
+          //   // zMoveZNormalize={0.12}
+          //   zMoveRange={18}
+          //   zPinchDistanceMin={0.02}
+          //   zPinchDistanceMax={0.34}
+          //   zMoveInvert={false}
+          //   scaleHand='Left'
+          //   scaleMin={10}
+          //   scaleMax={28}
+          //   pinchDistanceMin={0.02}
+          //   pinchDistanceMax={0.34}
+          //   enableScaleSmoothing
+          //   scaleSmoothing={12}
+          //   rotateHand='Right'
+          //   rotateUseWorldLandmarks={false}
+          //   rotationYawMultiplier={1}
+          //   enableRotationSmoothing
+          //   rotationSmoothing={10}
+          //   rotationReturnWhenLost
+          // />
+
+
+
+
+
+
 
 // import Begin from './components/Begin';
 // import { Man } from './components/Man';
