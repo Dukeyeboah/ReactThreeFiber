@@ -16,8 +16,9 @@
  *
  * Extra (all optional)
  * --------------------
- * • **Z toward/away from camera** — `zMoveEnabled` + `zMoveRange` / `zMoveZNormalize` / `zMoveInvert`.
- *   Split mode uses the move-hand palm point’s `z`; single mode set `zMoveHand` + `zMoveLandmark`.
+ * • **Z toward/away from camera** — `zMoveEnabled` + `zMoveRange` + `zMoveInvert`.
+ *   Set `zMoveSource="pinch"` (move hand thumb–index): **pinched = closer to camera**, **open = farther**.
+ *   Or `zMoveSource="landmarkZ"` uses palm/landmark depth (`zMoveZNormalize`).
  * • **Scale** — `scaleHand` + `scaleMin` / `scaleMax` + pinch span `pinchDistanceMin` / `pinchDistanceMax`
  *   (thumb tip vs index tip distance in normalized image space).
  * • **Rotate** — `rotateHand` + `rotateUseWorldLandmarks` (3D palm basis from `worldLandmarks`, best effort)
@@ -76,9 +77,11 @@ const _eulerFromHand = new THREE.Euler();
  * @param {number} [props.sphereMoveSmoothing=10]
  * @param {boolean} [props.sphereReturnWhenLost=true] — lerp offset back when move hand is lost
  * @param {number} [props.maxHands=2]
- * @param {boolean} [props.zMoveEnabled=false] — depth along camera axis (toward camera = positive feel)
+ * @param {boolean} [props.zMoveEnabled=false] — depth along camera view axis
+ * @param {'landmarkZ'|'pinch'} [props.zMoveSource='landmarkZ']
  * @param {number} [props.zMoveRange=3]
- * @param {number} [props.zMoveZNormalize=0.12] — divides landmark `z` before clamping to ±1
+ * @param {number} [props.zMoveZNormalize=0.12] — for landmarkZ only
+ * @param {number} [props.zPinchDistanceMin=0.02] [props.zPinchDistanceMax=0.34] — for pinch Z (thumb–index span)
  * @param {boolean} [props.zMoveInvert=false]
  * @param {'Left'|'Right'|null} [props.zMoveHand] — single mode: hand for Z-only drag; split uses move hand
  * @param {'palmCenter'|keyof import('./mediapipeHandTargets').HAND_LANDMARK_PRESETS|number} [props.zMoveLandmark='palmCenter']
@@ -110,8 +113,11 @@ export default function HandInteraction({
   targetSmoothing = 14,
   outerRadiusFactor = 1.8,
   zMoveEnabled = false,
+  zMoveSource = 'landmarkZ',
   zMoveRange = 3,
   zMoveZNormalize = 0.12,
+  zPinchDistanceMin = 0.02,
+  zPinchDistanceMax = 0.34,
   zMoveInvert = false,
   zMoveHand,
   zMoveLandmark = 'palmCenter',
@@ -349,28 +355,68 @@ export default function HandInteraction({
         );
         if (zMoveEnabled) {
           camera.getWorldDirection(_camFwd);
+          let zAlongView = 0;
+          if (zMoveSource === 'pinch') {
+            const d = getThumbIndexPinchDistance(moveLandmarks);
+            if (d != null) {
+              const zSpan = Math.max(
+                1e-5,
+                zPinchDistanceMax - zPinchDistanceMin,
+              );
+              const t = THREE.MathUtils.clamp(
+                (d - zPinchDistanceMin) / zSpan,
+                0,
+                1,
+              );
+              let zDrive = 1 - 2 * t;
+              if (zMoveInvert) zDrive = -zDrive;
+              zAlongView = -zDrive * zMoveRange;
+            }
+          } else {
+            let zv = THREE.MathUtils.clamp(
+              (pt.z ?? 0) / zMoveZNormalize,
+              -1,
+              1,
+            );
+            if (zMoveInvert) zv = -zv;
+            zAlongView = -zv * zMoveRange;
+          }
+          _targetSphereOffset.addScaledVector(_camFwd, zAlongView);
+        }
+      }
+    } else if (zMoveEnabled && zMoveHand) {
+      const zLm = getHandLandmarksBySide(results, zMoveHand);
+      if (zMoveSource === 'pinch' && zLm) {
+        const d = getThumbIndexPinchDistance(zLm);
+        if (d != null) {
+          hasPositionTarget = true;
+          camera.getWorldDirection(_camFwd);
+          const zSpan = Math.max(
+            1e-5,
+            zPinchDistanceMax - zPinchDistanceMin,
+          );
+          const t = THREE.MathUtils.clamp(
+            (d - zPinchDistanceMin) / zSpan,
+            0,
+            1,
+          );
+          let zDrive = 1 - 2 * t;
+          if (zMoveInvert) zDrive = -zDrive;
+          _targetSphereOffset.addScaledVector(_camFwd, -zDrive * zMoveRange);
+        }
+      } else if (zLm) {
+        const zPt = getHandLandmarkPoint(zLm, zMoveLandmark);
+        if (zPt) {
+          hasPositionTarget = true;
+          camera.getWorldDirection(_camFwd);
           let zv = THREE.MathUtils.clamp(
-            (pt.z ?? 0) / zMoveZNormalize,
+            (zPt.z ?? 0) / zMoveZNormalize,
             -1,
             1,
           );
           if (zMoveInvert) zv = -zv;
           _targetSphereOffset.addScaledVector(_camFwd, -zv * zMoveRange);
         }
-      }
-    } else if (zMoveEnabled && zMoveHand) {
-      const zLm = getHandLandmarksBySide(results, zMoveHand);
-      const zPt = zLm ? getHandLandmarkPoint(zLm, zMoveLandmark) : null;
-      if (zPt) {
-        hasPositionTarget = true;
-        camera.getWorldDirection(_camFwd);
-        let zv = THREE.MathUtils.clamp(
-          (zPt.z ?? 0) / zMoveZNormalize,
-          -1,
-          1,
-        );
-        if (zMoveInvert) zv = -zv;
-        _targetSphereOffset.addScaledVector(_camFwd, -zv * zMoveRange);
       }
     }
 

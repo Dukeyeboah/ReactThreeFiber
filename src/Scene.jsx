@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Leva } from 'leva';
-import { OrbitControls, Stage } from '@react-three/drei';   
+import { OrbitControls, Stage } from '@react-three/drei';
 
 import TeachShaders from './components/TeachShaders';
 import ScreenShaderTest from './components/ScreenShaderTest';
@@ -46,11 +46,11 @@ export default function Scene() {
           {/* <HandInteraction landmark="indexTip" handSide="Right" /> */}
           {/* Split: left palm moves sphere, right index pulls vertices (swap hands if mirrored wrong) */}
           <HandInteraction
-            mode="splitRoles"
-            moveSphereHand="Right"
-            vertexPullHand="Left"
-            sphereLandmark="palmCenter"
-            vertexLandmark="indexTip"
+            mode='splitRoles'
+            moveSphereHand='Right'
+            vertexPullHand='Left'
+            sphereLandmark='palmCenter'
+            vertexLandmark='indexTip'
             sphereMoveRange={30}
             sphereMoveRangeY={16}
             enableSphereMoveSmoothing
@@ -62,17 +62,21 @@ export default function Scene() {
             targetSmoothing={14}
             outerRadiusFactor={1.8}
             zMoveEnabled
-            zMoveRange={14}
-            zMoveZNormalize={0.12}
+            zMoveSource='pinch'
+            // zMoveSource='landmarkZ'
+            // zMoveZNormalize={0.12}
+            zMoveRange={24}
+            zPinchDistanceMin={0.02}
+            zPinchDistanceMax={0.34}
             zMoveInvert={false}
-            scaleHand="Left"
+            scaleHand='Left'
             scaleMin={10}
             scaleMax={28}
             pinchDistanceMin={0.02}
             pinchDistanceMax={0.34}
             enableScaleSmoothing
             scaleSmoothing={12}
-            rotateHand="Right"
+            rotateHand='Right'
             rotateUseWorldLandmarks={false}
             rotationYawMultiplier={1}
             enableRotationSmoothing
@@ -86,26 +90,6 @@ export default function Scene() {
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import Begin from './components/Begin';
 // import { Man } from './components/Man';
 // import RagingSea from './components/RagingSea';
@@ -113,27 +97,24 @@ export default function Scene() {
 // import PhysicalMaterialShaders from './components/PhysicalMaterialShaders';
 // import ScreenShaderTest from './components/ScreenShaderTest';
 
-    {/* <PhysicalMaterialShaders /> */}
-          {/* <Begin /> */}
-          {/* <TestShaders /> */}
-          {/* <Man/> */}
-          {/* <RagingSea/> */}
-          {/* <ScreenShaderTest /> */}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{
+  /* <PhysicalMaterialShaders /> */
+}
+{
+  /* <Begin /> */
+}
+{
+  /* <TestShaders /> */
+}
+{
+  /* <Man/> */
+}
+{
+  /* <RagingSea/> */
+}
+{
+  /* <ScreenShaderTest /> */
+}
 
 // import { OrbitControls, Stage, } from '@react-three/drei';
 // import { Suspense } from 'react';
