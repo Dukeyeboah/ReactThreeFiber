@@ -62,9 +62,9 @@ export default function Scene() {
             targetSmoothing={14}
             outerRadiusFactor={1.8}
             zMoveEnabled
-            zMoveSource='pinch'
-            // zMoveSource='landmarkZ'
-            // zMoveZNormalize={0.12}
+            // zMoveSource='pinch'
+            zMoveSource='landmarkZ'
+            zMoveZNormalize={0.12}
             zMoveRange={24}
             zPinchDistanceMin={0.02}
             zPinchDistanceMax={0.34}
