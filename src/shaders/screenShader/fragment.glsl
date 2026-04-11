@@ -4,6 +4,7 @@ uniform float uTime;
 uniform vec2 uResolution;
 
 varying vec2 vUv;
+varying float vElevation;
 #define PI 3.1415926535897932384626433832795
 
 void main() {
@@ -21,9 +22,15 @@ void main() {
    // gl_FragColor = vec4(col, 1.0);
   //  gl_FragColor = vec4(vUv.x,0.0,vUv.y, 1.0);
 
-  // simple gradien from black to white along the uV.x
+  // simple gradient from black to white along the uV.x
   vec3 color = mix(vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0), vUv.x);
 // For colored version
+// //use for radial direction instead of vUv.x & vUv.y
+// float dist = length(vUv - 0.5);
+
+// float designR = dist * 10.0;
+// float designR2 = (1.0-dist) * 10.0;
+
 float designXf = vUv.x * 10.0;
 float designX2f = (1.0-vUv.x) * 10.0;
 float designYf = vUv.y * 10.0;
@@ -34,16 +41,53 @@ float patternXf = mod(designXf, 1.0 + cos(vUv.y * pulsef));
 float patternYf = mod(designYf, 1.0 + cos(vUv.x * pulsef));
 float patternX2f = mod(designX2f, 1.0 + cos(vUv.y * pulsef));
 float patternY2f = mod(designY2f, 1.0 + cos(vUv.x * pulsef));
+// float patternRf = mod(designR, 1.0 + cos(vUv.x * pulsef));
+// float patternR2f = mod(designR2, 1.0 + cos(vUv.x * pulsef));
+
+// // sharpen lines
+// patternXf = step(0.8, patternXf);
+// patternYf = step(0.8, patternYf);
 
 float combinedPatternf = patternXf + patternYf + patternX2f + patternY2f;
-vec3 colorX = vec3(0.6, 0.0, 1.0); // purple
-vec3 colorY = vec3(1.0, 1.0, 0.0); // yellow
+
+//elevation color adjustment
+// normalize elevation
+float elevationNorm = clamp(vElevation * 2.0, 0.0, 1.0);
+
+
+
+// pulse color for animation
+float glowColor = mix(0.1, 0.9, (cos(uTime) + 1.0) * 0.5);
+float glowColor2 = mix(0.1, 0.6, (sin(uTime) + 1.0) * 0.5);
+float glowColor3 = mix(0.3, 0.7, (cos(uTime*0.5) + 1.0) * 0.5);
+
+// elevation color
+vec3 elevationColor = mix(vec3(0.0), vec3(glowColor,glowColor3,glowColor2), elevationNorm);
+// vec3 elevationColor = mix(vec3(0.0), vec3(glowColor,glowColor3,0.5), vElevation);
+
+vec3 colorX = vec3(glowColor3,glowColor , glowColor2); // animate color
+// vec3 colorY = vec3(1.0, 1.0, 0.0); // yellow
+vec3 colorY = vec3(glowColor2, glowColor3, 0.5); // yellow
 vec3 finalColor = vec3(0.0);
 
+// finalColor += colorX * patternRf;
+// finalColor += colorX * patternR2f;
 finalColor += colorX * patternXf;
-finalColor += colorY * patternYf;
-finalColor += colorX * patternX2f;
-finalColor += colorY * patternY2f;
+finalColor += colorY * patternX2f;
+
+// ADD elevation influence
+// finalColor += elevationColor;
+//OR
+// OPTIONAL: blend instead of add (more controlled)
+// finalColor = mix(finalColor, elevationColor, 0.5);
+
+float glowStrength = mix(1.0, 4.0, (sin(uTime) + 1.0) * 0.5);
+
+finalColor *= glowStrength;
+// finalColor *= 2.0;
+// finalColor += colorY * patternYf;
+// finalColor += colorX * patternX2f;
+// finalColor += colorY * patternY2f;
 
 //Gradient color version
 vec3 gradX = mix(vec3(0.0), vec3(0.0, 0.5, 1.0), patternXf);
@@ -57,6 +101,9 @@ vec3 finalColor2 = gradX + gradY + gradX2 + gradY2;
   // vec3 strength = vec3(vUv.x*10.0);//rgb values each move from 0-10 in x-direction so white starts very early along the x-axis(1/10th of the way). turns white at 1 and beyond
   // gl_FragColor = vec4(strength, 1.0); //or vec4(color, 1.0);
 
+
+
+// initial method using vec 3
   vec3 design = vec3(vUv.x*10.0);
   vec3 designX2 = vec3((1.0-vUv.x)*10.0);
   vec3 designY = vec3(vUv.y*10.0);
@@ -123,7 +170,7 @@ vec3 finalColor2 = gradX + gradY + gradX2 + gradY2;
   // float lines = mod(vUv.y * 20.0 + uTime * 2.0, 1.0);//moving scanlines across your orb
 
   // gl_FragColor = vec4(color, 1.0); 
-  // gl_FragColor = vec4(design, 1.0); 
+   gl_FragColor = vec4(finalColor, 1.0); 
   // vec3 combinedPattern = (animatePattern1XYP + animatePattern1X2YP +animatePattern1YXP +animatePattern1YXP);
   // // vec3 coloredPattern = mix(vec3(vUv.x), vec3(1.0, 0.0, 0.0), combinedPattern);
    
@@ -134,7 +181,7 @@ vec3 finalColor2 = gradX + gradY + gradX2 + gradY2;
 
     //gl_FragColor = vec4(uvColor, 1.0); 
   
-    gl_FragColor = vec4(finalColor2, 1.0);//colred version
+    // gl_FragColor = vec4(finalColor2, 1.0);//colred version
     //black and white version
   //  gl_FragColor = vec4(animatePattern1XYP + animatePattern1X2YP +animatePattern1YXP +animatePattern1YXP, 1.0); 
 

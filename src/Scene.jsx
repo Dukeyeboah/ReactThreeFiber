@@ -1,12 +1,14 @@
 import { Canvas } from '@react-three/fiber';
 import { Leva } from 'leva';
-import Begin from './components/Begin';
-import { OrbitControls, Stage } from '@react-three/drei';
-import { Man } from './components/Man';
-import RagingSea from './components/RagingSea';
-import TestShaders from './components/TestShaders';
-import PhysicalMaterialShaders from './components/PhysicalMaterialShaders';
+import { OrbitControls, Stage } from '@react-three/drei';   
+
+import TeachShaders from './components/TeachShaders';
 import ScreenShaderTest from './components/ScreenShaderTest';
+import FaceInteraction from './components/FaceInteraction';
+import HandInteraction from './components/HandInteraction';
+
+/** Toggle to test hand tracking (turn off ScreenShaderTest / other demos first). */
+const SHOW_HAND_INTERACTION = true;
 
 export default function Scene() {
   return (
@@ -19,7 +21,7 @@ export default function Scene() {
         style={{ width: '100%', height: '100vh' }}
       >
         <color attach='background' args={['white']} />
-        {/* <Stage
+        <Stage
           adjustCamera={[1.5]}
           intensity={1.5}
           environment={{
@@ -28,15 +30,57 @@ export default function Scene() {
             environmentIntensity: 1.25,
           }}
           shadows={{ type: 'contact', preset: 'upfront' }}
-        > */}
-          {/* <PhysicalMaterialShaders /> */}
-          {/* <Begin /> */}
-          {/* <TestShaders /> */}
-          {/* <Man/> */}
-          {/* <RagingSea/> */}
-          <ScreenShaderTest />
-        {/* </Stage> */}
-        {/* <OrbitControls makeDefault enableDamping dampingFactor={0.05} /> */}
+        >
+          {/*<TeachShaders />*/}
+          {/* <ScreenShaderTest /> */}
+          {/* Face: switch landmark + smoothing — see FaceInteraction.jsx file header */}
+          {/* <FaceInteraction landmark="noseTip" /> */}
+          {/* <FaceInteraction landmark="forehead" /> */}
+          {/* <FaceInteraction landmark="mouthCenter" enableTargetSmoothing targetSmoothing={10} /> */}
+          {/* {SHOW_HAND_INTERACTION ? (
+            <HandInteraction landmark="indexTip" />
+          ) : null} */}
+          {/* Single hand, palm drives deformation (whole hand as one point): */}
+          {/* <HandInteraction landmark="palmCenter" handSide="Right" /> */}
+          {/* Single hand, right index only (by side): */}
+          {/* <HandInteraction landmark="indexTip" handSide="Right" /> */}
+          {/* Split: left palm moves sphere, right index pulls vertices (swap hands if mirrored wrong) */}
+          <HandInteraction
+            mode="splitRoles"
+            moveSphereHand="Right"
+            vertexPullHand="Left"
+            sphereLandmark="palmCenter"
+            vertexLandmark="indexTip"
+            sphereMoveRange={30}
+            sphereMoveRangeY={16}
+            enableSphereMoveSmoothing
+            sphereMoveSmoothing={10}
+            sphereReturnWhenLost
+            maxHands={2}
+            mirrorWebcamX
+            enableTargetSmoothing
+            targetSmoothing={14}
+            outerRadiusFactor={1.8}
+            zMoveEnabled
+            zMoveRange={14}
+            zMoveZNormalize={0.12}
+            zMoveInvert={false}
+            scaleHand="Left"
+            scaleMin={10}
+            scaleMax={28}
+            pinchDistanceMin={0.02}
+            pinchDistanceMax={0.34}
+            enableScaleSmoothing
+            scaleSmoothing={12}
+            rotateHand="Right"
+            rotateUseWorldLandmarks={false}
+            rotationYawMultiplier={1}
+            enableRotationSmoothing
+            rotationSmoothing={10}
+            rotationReturnWhenLost
+          />
+        </Stage>
+        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
       </Canvas>
     </>
   );
@@ -44,6 +88,37 @@ export default function Scene() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import Begin from './components/Begin';
+// import { Man } from './components/Man';
+// import RagingSea from './components/RagingSea';
+// import TestShaders from './components/TestShaders';
+// import PhysicalMaterialShaders from './components/PhysicalMaterialShaders';
+// import ScreenShaderTest from './components/ScreenShaderTest';
+
+    {/* <PhysicalMaterialShaders /> */}
+          {/* <Begin /> */}
+          {/* <TestShaders /> */}
+          {/* <Man/> */}
+          {/* <RagingSea/> */}
+          {/* <ScreenShaderTest /> */}
 
 
 
