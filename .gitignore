@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Large media (GitHub max ~100 MB per file; keep locally or use Git LFS / CDN)
+public/videos/*.mp4
