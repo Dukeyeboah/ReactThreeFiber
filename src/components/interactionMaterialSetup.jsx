@@ -15,6 +15,13 @@ const InteractionShaderMaterial = shaderMaterial(
     uActive: 0,
     uPullStrength: 0.88,
     uPullRadius: 6.2,
+    uAudioLevel: 0,
+    uBassLevel: 0,
+    uTrebleLevel: 0,
+    uAudioInfluence: 1,
+    /** 0 = off; 1 = add `uAudioLevel * uAudioPullGain` to inward pull (audio mode). */
+    uAudioPullModulate: 0,
+    uAudioPullGain: 2,
   },
   interactionVertexShader,
   interactionFragmentShader,

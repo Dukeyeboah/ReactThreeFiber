@@ -1,4 +1,5 @@
-import { extend, useFrame, useThree, 
+import { extend, useFrame, 
+  // useThree, 
   //useLoader 
 
 } from '@react-three/fiber';
@@ -70,14 +71,19 @@ extend({ VolumetricMaterial });
 const _hitWorld = new THREE.Vector3();
 const _sphereWorld = new THREE.Sphere();
 
-export default function ScreenShaderTest() {
+export default function ScreenShaderTest({
+  pullRadius = 6.2,
+  pullStrength = 0.88,
+  /** Scales cursor velocity “throw” in the shader (`uThrowStrength`). */
+  reactionSensitivity = 0.03,
+} = {}) {
   const materialRef = useRef();
   const interactionMeshRef = useRef();
   const coreRef = useRef();
   const textureRef = useRef();
   const lastTargetRef = useRef(new THREE.Vector3()); // ← NEW - remembers previous target
 
-  const { viewport } = useThree();
+  // const { viewport } = useThree();
 
 //   const video = document.createElement('video');
 // video.src = '/video.mp4';
@@ -101,7 +107,7 @@ export default function ScreenShaderTest() {
   // texture.type = THREE.UnsignedByteType;
   // texture.minFilter = THREE.LinearMipMapLinearFilter;
 
-  console.log(viewport.height)
+  // console.log(viewport.height)
 
   useFrame((state, delta) => {
 
@@ -260,7 +266,10 @@ export default function ScreenShaderTest() {
     uMode={mode}
     /> */}
     <interactionShaderMaterial
-    ref={materialRef}
+      ref={materialRef}
+      uPullRadius={pullRadius}
+      uPullStrength={pullStrength}
+      uThrowStrength={reactionSensitivity}
     />
     {/* <meshStandardMaterial color='blue' wireframe /> */}
   </mesh>

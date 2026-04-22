@@ -92,6 +92,8 @@ const _eulerFromHand = new THREE.Euler();
  * @param {number} [props.rotationYawMultiplier=1]
  * @param {boolean} [props.enableRotationSmoothing=true] [props.rotationSmoothing=10] [props.rotationReturnWhenLost=true]
  * @param {boolean} [props.enableScaleSmoothing=true] [props.scaleSmoothing=12]
+ * @param {number} [props.pullRadius=6.2] shader `uPullRadius`
+ * @param {number} [props.pullStrength=0.88] shader `uPullStrength`
  */
 export default function HandInteraction({
   mode = 'single',
@@ -103,7 +105,7 @@ export default function HandInteraction({
   sphereLandmark = 'palmCenter',
   vertexLandmark = 'indexTip',
   sphereMoveRange = 2.5,
-  sphereMoveRangeY,
+  sphereMoveRangeY = 16.0,
   enableSphereMoveSmoothing = true,
   sphereMoveSmoothing = 10,
   sphereReturnWhenLost = true,
@@ -134,6 +136,8 @@ export default function HandInteraction({
   enableRotationSmoothing = true,
   rotationSmoothing = 10,
   rotationReturnWhenLost = true,
+  pullRadius = 6.2,
+  pullStrength = 0.88,
 }) {
   const materialRef = useRef();
   const interactionMeshRef = useRef();
@@ -614,7 +618,11 @@ export default function HandInteraction({
     <group>
       <mesh ref={interactionMeshRef} scale={14.0} position={[0, 3, 0]}>
         <sphereGeometry args={[2, 64, 64]} />
-        <interactionShaderMaterial ref={materialRef} />
+        <interactionShaderMaterial
+          ref={materialRef}
+          uPullRadius={pullRadius}
+          uPullStrength={pullStrength}
+        />
       </mesh>
     </group>
   );

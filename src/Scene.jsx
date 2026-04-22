@@ -7,11 +7,14 @@ import TeachShaders from './components/TeachShaders';
 import ScreenShaderTest from './components/ScreenShaderTest';
 import FaceInteraction from './components/FaceInteraction';
 import HandInteraction from './components/HandInteraction';
+import AudioInteraction from './components/AudioInteraction';
 import {
   mapHandLevaToProps,
+  useAudioInteractionControls,
   useFaceInteractionControls,
   useHandInteractionControls,
   useInteractionAppControls,
+  useMouseInteractionControls,
 } from './interactionLevaControls';
 
 /**
@@ -23,6 +26,8 @@ import {
 export default function Scene() {
   const [levaVisible, setLevaVisible] = useState(true);
   const app = useInteractionAppControls();
+  const audioLeva = useAudioInteractionControls();
+  const mouseLeva = useMouseInteractionControls();
   const handLeva = useHandInteractionControls();
   const faceLeva = useFaceInteractionControls();
   const handProps = mapHandLevaToProps(handLeva);
@@ -76,7 +81,20 @@ export default function Scene() {
               targetSmoothing={faceLeva.targetSmoothing}
             />
           ) : null}
-          {app.interactionMode === 'mouse' ? <ScreenShaderTest /> : null}
+          {app.interactionMode === 'mouse' ? (
+            <ScreenShaderTest
+              pullRadius={mouseLeva.pullRadius}
+              pullStrength={mouseLeva.pullStrength}
+              reactionSensitivity={mouseLeva.reactionSensitivity}
+            />
+          ) : null}
+          {app.interactionMode === 'audio' ? (
+            <AudioInteraction
+              audioSource={audioLeva.audioSource}
+              modulatePullByLoudness={audioLeva.modulatePullByLoudness}
+              audioPullGain={audioLeva.audioPullGain}
+            />
+          ) : null}
         </Stage>
         <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
       </Canvas>

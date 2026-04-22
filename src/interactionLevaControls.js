@@ -13,17 +13,65 @@ const HAND_LANDMARK_OPTIONS = [
 const SIDE_OPTIONS = ['Left', 'Right'];
 const OFF_SIDE_OPTIONS = ['Off', 'Left', 'Right'];
 
-/** App-level Leva: interaction mode (hand / face / mouse). */
+/** Mic vs tab/window capture for `AudioInteraction`. */
+export function useAudioInteractionControls() {
+  return useControls(
+    'Audio interaction',
+    {
+      audioSource: {
+        value: 'microphone',
+        options: {
+          Microphone: 'microphone',
+          'Tab / window (share audio)': 'display',
+        },
+      },
+      modulatePullByLoudness: {
+        value: false,
+        label: 'Extra inward pull from loudness',
+      },
+      audioPullGain: {
+        value: 2,
+        min: 0,
+        max: 8,
+        step: 0.1,
+        label: 'Loudness → pull amount',
+      },
+    },
+    { collapsed: true },
+  );
+}
+
+/** Shader tuning for `ScreenShaderTest` (mouse). */
+export function useMouseInteractionControls() {
+  return useControls(
+    'Mouse interaction',
+    {
+      pullRadius: { value: 6.2, min: 0.5, max: 20, step: 0.1 },
+      pullStrength: { value: 0.88, min: 0, max: 3, step: 0.02 },
+      reactionSensitivity: {
+        value: 0.03,
+        min: 0,
+        max: 1.5,
+        step: 0.01,
+        label: 'Reaction sensitivity',
+      },
+    },
+    { collapsed: true },
+  );
+}
+
+/** App-level Leva: interaction mode (default: mouse). */
 export function useInteractionAppControls() {
   return useControls(
     'App',
     {
       interactionMode: {
-        value: 'hand',
+        value: 'mouse',
         options: {
+          Mouse: 'mouse',
           'Hand (webcam)': 'hand',
           'Face (webcam)': 'face',
-          Mouse: 'mouse',
+          'Audio (mic / tab)': 'audio',
         },
       },
     },
@@ -83,6 +131,7 @@ export function useHandInteractionControls() {
       enableRotationSmoothing: true,
       rotationSmoothing: { value: 10, min: 0.5, max: 40, step: 0.1 },
       rotationReturnWhenLost: true,
+      pullRadius: { value: 6.2, min: 0.5, max: 20, step: 0.1 },
     },
     { collapsed: true },
   );
@@ -152,6 +201,7 @@ export function mapHandLevaToProps(h) {
     enableRotationSmoothing: h.enableRotationSmoothing,
     rotationSmoothing: h.rotationSmoothing,
     rotationReturnWhenLost: h.rotationReturnWhenLost,
+    pullRadius: h.pullRadius,
   };
 
   if (h.layout === 'single') {

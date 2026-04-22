@@ -7,6 +7,13 @@ uniform float uTime;
 uniform vec3 uMouseVelocity;
 uniform float uThrowStrength;
 
+uniform float uAudioLevel;
+uniform float uBassLevel;
+uniform float uTrebleLevel;
+uniform float uAudioInfluence;
+uniform float uAudioPullModulate;
+uniform float uAudioPullGain;
+
 // === Perlin Noise Functions (paste exactly as you gave me) ===
 vec4 permute(vec4 x) {
     return mod(((x*34.0)+1.0)*x, 289.0);
@@ -92,30 +99,29 @@ void main() {
   vec3 toTarget = uTargetLocal - pos;
   float dist = length(toTarget);
 
-  float influence = uActive * smoothstep(uPullRadius, 0.0, dist);
+  float influence =
+    uActive * smoothstep(uPullRadius, 0.0, dist) * uAudioInfluence;
 
   vec3 dir = dist > 1e-5 ? normalize(toTarget) : vec3(0.0);
 
-  // Main pull
-  pos += dir * influence * uPullStrength;
+  float dynamicPull = uPullStrength + uBassLevel * 2.5;
+  dynamicPull += uAudioPullModulate * uAudioLevel * uAudioPullGain;
+  pos += dir * influence * dynamicPull;
 
   // Mouse throwing / velocity
   pos += uMouseVelocity * influence * uThrowStrength;
 
-  // === Organic waves + Perlin noise ===
-  float wave = sin(uTime * 6.0 + dist * 8.0) * 0.04 * influence;
-   // Extra organic noise that makes the surface look alive and wobbly
-  float organic = sin(uTime * 4.0 + pos.x * 12.0) * 
-                  sin(uTime * 7.0 + pos.y * 9.0) * sin(uTime * 3.0 + pos.z * 8.0)*0.035 * influence;
-  
+  // === Organic waves + Perlin noise (treble speeds ripples, bass adds punch) ===
+  float trebleFreq = 6.0 + uTrebleLevel * 25.0;
+  float wave =
+    sin(uTime * trebleFreq + dist * 8.0) * 0.04 * influence;
+  float bassPush = uBassLevel * 0.25 * influence;
+
   // Perlin noise - this creates the rich, natural turbulence
   // We scale position so noise is detailed on the sphere, and move it over time
   float noise = cnoise(pos * 3.5 + uTime * 1.8) * 0.12 * influence;
 
-  // Combine sine wave + perlin noise for very organic movement
-  float totalDisplacement = wave + noise ;
-//   float totalDisplacement = wave + noise + organic; // can add organic for extra waves
-
+  float totalDisplacement = wave + noise + bassPush;
   pos += normal * totalDisplacement;
 
   vDist = dist;
