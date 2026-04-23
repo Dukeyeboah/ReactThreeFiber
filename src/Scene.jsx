@@ -91,6 +91,15 @@ export default function Scene() {
           {app.interactionMode === 'audio' ? (
             <AudioInteraction
               audioSource={audioLeva.audioSource}
+              pullRadius={audioLeva.pullRadius}
+              pullStrength={audioLeva.pullStrength}
+              movingTargetEnabled={audioLeva.movingTargetEnabled}
+              movingTargetMode={audioLeva.movingTargetMode}
+              targetRadius={audioLeva.targetRadius}
+              targetSmoothing={audioLeva.targetSmoothing}
+              bandOrbitSpeed={audioLeva.bandOrbitSpeed}
+              beatThreshold={audioLeva.beatThreshold}
+              beatCooldownMs={audioLeva.beatCooldownMs}
               modulatePullByLoudness={audioLeva.modulatePullByLoudness}
               audioPullGain={audioLeva.audioPullGain}
             />

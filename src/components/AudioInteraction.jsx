@@ -18,6 +18,32 @@ import './interactionMaterialSetup';
 
 const _origin = new THREE.Vector3(0, 0, 0);
 const _zeroVel = new THREE.Vector3(0, 0, 0);
+const _dirTmp = new THREE.Vector3();
+const _dirBands = new THREE.Vector3();
+const _dirBeat = new THREE.Vector3();
+const _dirDesired = new THREE.Vector3();
+const _targetLocal = new THREE.Vector3();
+
+function randomUnitVector(out) {
+  // Uniform on sphere.
+  const u = Math.random();
+  const v = Math.random();
+  const theta = 2 * Math.PI * u;
+  const z = 2 * v - 1;
+  const r = Math.sqrt(Math.max(0, 1 - z * z));
+  out.set(r * Math.cos(theta), r * Math.sin(theta), z);
+  return out;
+}
+
+function dirFromSpherical(out, azimuth, elevation) {
+  const cosEl = Math.cos(elevation);
+  out.set(
+    Math.cos(azimuth) * cosEl,
+    Math.sin(azimuth) * cosEl,
+    Math.sin(elevation),
+  );
+  return out;
+}
 
 /** @param {number} fftSize must be power of two, 32–32768 */
 function allocAnalyserBuffers(analyser) {
@@ -44,6 +70,15 @@ function bandAverage(data, start, endExclusive) {
  * @param {boolean} [props.modulatePullByLoudness=false] If true, adds `uAudioLevel * uAudioPullGain` to the
  *   same inward `dynamicPull` term as bass (see vertex shader). Toggle from Leva.
  * @param {number} [props.audioPullGain=2] Strength when loudness modulation is on.
+ * @param {boolean} [props.movingTargetEnabled=false] If true, animates `uTargetLocal` around the sphere.
+ * @param {'bands'|'beat'|'combo'} [props.movingTargetMode='combo']
+ * @param {number} [props.targetRadius=2] Local-space radius for `uTargetLocal` (sphereGeometry radius is 2).
+ * @param {number} [props.targetSmoothing=10] Higher = follows desired target faster.
+ * @param {number} [props.bandOrbitSpeed=1.2] Radians/sec baseline orbit speed.
+ * @param {number} [props.beatThreshold=0.06] Bass flux threshold for a “beat”.
+ * @param {number} [props.beatCooldownMs=200] Minimum time between beat triggers.
+ * @param {number} [props.pullRadius=6.2] shader `uPullRadius`
+ * @param {number} [props.pullStrength=0.88] shader `uPullStrength`
  */
 export default function AudioInteraction({
   audioSource = 'microphone',
@@ -52,6 +87,15 @@ export default function AudioInteraction({
   smoothing = 14,
   modulatePullByLoudness = false,
   audioPullGain = 2,
+  movingTargetEnabled = false,
+  movingTargetMode = 'combo',
+  targetRadius = 2,
+  targetSmoothing = 10,
+  bandOrbitSpeed = 1.2,
+  beatThreshold = 0.06,
+  beatCooldownMs = 200,
+  pullRadius = 6.2,
+  pullStrength = 0.88,
 }) {
   const materialRef = useRef(null);
 
@@ -62,6 +106,11 @@ export default function AudioInteraction({
   const buffersRef = useRef(null);
 
   const smoothedRef = useRef({ level: 0, bass: 0, treble: 0 });
+  const orbitRef = useRef({ azimuth: 0, elevation: 0 });
+  const prevBassRef = useRef(0);
+  const lastBeatMsRef = useRef(-1);
+  const smoothedDirRef = useRef(new THREE.Vector3(1, 0, 0));
+  const beatDirRef = useRef(new THREE.Vector3(1, 0, 0));
 
   useEffect(() => {
     let cancelled = false;
@@ -184,6 +233,54 @@ export default function AudioInteraction({
     mat.uAudioInfluence = 0.55 + s.level * 1.85;
     mat.uAudioPullModulate = modulatePullByLoudness ? 1 : 0;
     mat.uAudioPullGain = audioPullGain;
+
+    // Optional: move the interaction point (`uTargetLocal`) around the surface.
+    if (movingTargetEnabled) {
+      // Beat detection (simple bass flux).
+      const nowMs = state.clock.elapsedTime * 1000;
+      const prevBass = prevBassRef.current;
+      prevBassRef.current = rawBass;
+      const bassFlux = Math.max(0, rawBass - prevBass);
+      const canBeat = lastBeatMsRef.current < 0 || nowMs - lastBeatMsRef.current >= beatCooldownMs;
+      const isBeat = canBeat && bassFlux >= beatThreshold;
+      if (isBeat) {
+        lastBeatMsRef.current = nowMs;
+        randomUnitVector(beatDirRef.current);
+      }
+
+      // Bands-driven orbit (continuous).
+      const o = orbitRef.current;
+      const orbitSpeed = bandOrbitSpeed * (0.35 + s.treble * 1.2);
+      o.azimuth += orbitSpeed * delta;
+      // Keep elevation in a comfortable range; bass pushes “up”, treble pulls “down”.
+      const targetEl = THREE.MathUtils.clamp((s.bass - s.treble) * 1.2, -0.9, 0.9);
+      const elAlpha = 1 - Math.exp(-2.5 * delta);
+      o.elevation = THREE.MathUtils.lerp(o.elevation, targetEl, Math.min(1, elAlpha));
+      dirFromSpherical(_dirBands, o.azimuth, o.elevation).normalize();
+
+      // Choose desired direction.
+      if (movingTargetMode === 'bands') {
+        _dirDesired.copy(_dirBands);
+      } else if (movingTargetMode === 'beat') {
+        _dirDesired.copy(beatDirRef.current);
+      } else {
+        // Combo: blend between bands + beat direction.
+        const w = THREE.MathUtils.clamp(0.25 + s.level * 0.75, 0, 1);
+        _dirDesired.copy(_dirBands).lerp(_dirTmp.copy(beatDirRef.current), w).normalize();
+      }
+
+      // Smooth direction on the sphere (slerp in direction space).
+      const sd = smoothedDirRef.current;
+      const aDir = 1 - Math.exp(-targetSmoothing * delta);
+      sd.lerp(_dirDesired, Math.min(1, aDir)).normalize();
+
+      _targetLocal.copy(sd).multiplyScalar(targetRadius);
+      mat.uTargetLocal.copy(_targetLocal);
+      mat.uActive = 1;
+    } else {
+      mat.uTargetLocal.copy(_origin);
+      mat.uActive = 1;
+    }
   });
 
   return (
@@ -192,7 +289,8 @@ export default function AudioInteraction({
         <sphereGeometry args={[2, 64, 64]} />
         <interactionShaderMaterial
           ref={materialRef}
-          uActive={1}
+          uPullRadius={pullRadius}
+          uPullStrength={pullStrength}
           uTargetLocal={_origin}
           uMouseVelocity={_zeroVel}
         />

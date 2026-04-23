@@ -25,6 +25,22 @@ export function useAudioInteractionControls() {
           'Tab / window (share audio)': 'display',
         },
       },
+      pullRadius: { value: 6.2, min: 0.5, max: 20, step: 0.1, label: 'Pull radius' },
+      pullStrength: { value: 0.88, min: 0, max: 3, step: 0.02, label: 'Pull strength' },
+      movingTargetEnabled: { value: false, label: 'Move deformation point' },
+      movingTargetMode: {
+        value: 'combo',
+        options: {
+          'Bands orbit': 'bands',
+          'Beat jumps': 'beat',
+          'Bands + beat (combo)': 'combo',
+        },
+      },
+      targetRadius: { value: 2.0, min: 0.1, max: 3.0, step: 0.01, label: 'Target radius (local)' },
+      targetSmoothing: { value: 10, min: 0.5, max: 40, step: 0.1, label: 'Target smoothing' },
+      bandOrbitSpeed: { value: 1.2, min: 0, max: 6, step: 0.05, label: 'Orbit speed' },
+      beatThreshold: { value: 0.06, min: 0, max: 0.5, step: 0.005, label: 'Beat threshold' },
+      beatCooldownMs: { value: 200, min: 0, max: 1000, step: 10, label: 'Beat cooldown (ms)' },
       modulatePullByLoudness: {
         value: false,
         label: 'Extra inward pull from loudness',
