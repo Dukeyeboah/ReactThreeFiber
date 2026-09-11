@@ -3,7 +3,12 @@ import { Canvas } from '@react-three/fiber';
 import { Leva } from 'leva';
 import { OrbitControls, Stage } from '@react-three/drei';
 
+import Begin from './components/Begin';
+import Shader from './components/Shader';
 import TeachShaders from './components/TeachShaders';
+import RagingSea from './components/RagingSea';
+import TestShaders from './components/TestShaders';
+
 import ScreenShaderTest from './components/ScreenShaderTest';
 import FaceInteraction from './components/FaceInteraction';
 import HandInteraction from './components/HandInteraction';
@@ -55,7 +60,7 @@ export default function Scene() {
       <Canvas
         flat
         shadows={true}
-        camera={{ position: [0, 0, -10], fov: 45, near: 0.1, far: 1000 }}
+        camera={{ position: [0, 0, 10], fov: 45, near: 0.1, far: 1000 }}
         style={{ width: '100%', height: '100vh' }}
       >
         <color attach='background' args={['white']} />
@@ -69,8 +74,13 @@ export default function Scene() {
           }}
           shadows={{ type: 'contact', preset: 'upfront' }}
         >
-          {/*<TeachShaders />*/}
-          {app.interactionMode === 'hand' ? (
+          {/* <TeachShaders /> */}
+          {/* <Begin /> */}
+          {/* <Shader /> */}
+          {/* <RagingSea /> */}
+          <TestShaders />
+          {/* Interaction components for sphere with interaction */}
+          {/* {app.interactionMode === 'hand' ? (
             <HandInteraction {...handProps} />
           ) : null}
           {app.interactionMode === 'face' ? (
@@ -103,7 +113,7 @@ export default function Scene() {
               modulatePullByLoudness={audioLeva.modulatePullByLoudness}
               audioPullGain={audioLeva.audioPullGain}
             />
-          ) : null}
+          ) : null} */}
         </Stage>
         <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
       </Canvas>

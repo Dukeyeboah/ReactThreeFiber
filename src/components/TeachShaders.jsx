@@ -33,8 +33,8 @@ export default function TeachShaders() {
       scale={[13, 13, 0.2]}
     >
       <planeGeometry args={[2, 2, 64, 64]} />
-      {/* <teachShaderMaterial ref={materialRef} /> */}
-      <meshStandardMaterial color='blue' wireframe />
+      <teachShaderMaterial ref={materialRef} />
+      {/* <meshStandardMaterial color='blue' wireframe /> */}
     </mesh>
   );
 }

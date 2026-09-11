@@ -2,16 +2,40 @@ import testPatternsVertexShader from '../shaders/testpatterns/vertex.glsl?raw';
 import testPatternsFragmentShader from '../shaders/testpatterns/fragment.glsl?raw';
 import { shaderMaterial } from '@react-three/drei';
 import { extend, useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
+import { useControls } from 'leva';
+import { useEffect, useRef, useState } from 'react';
 
 import * as THREE from 'three';
+
+const TEST_PATTERN_FILES = [
+  'black sword2.png',
+  'sankofa 1.png',
+  'bi nka bi.gif',
+  'dame-dame.gif',
+  'gye nyame.gif',
+  'mmusuyidee.gif',
+  'nea onnim no sua a , ohu.gif',
+  'nkyinkyim.gif',
+  'nyame dua.gif',
+  'nyame ye ohene.gif',
+  'owuo atwedee.gif',
+];
+
+function publicTextureUrl(filename) {
+  return `/textures/testPatterns/${encodeURIComponent(filename)}`;
+}
+
+const LIBRARY_OPTIONS = Object.fromEntries(
+  TEST_PATTERN_FILES.map((filename) => [filename, publicTextureUrl(filename)]),
+);
 
 const TestPatternsShaderMaterial = shaderMaterial(
   {
     uTime: 0,
     uResolution: [window.innerWidth, window.innerHeight],
     uMouse: [0, 0],
-    // wireframe:true,
+    uTexture: new THREE.Texture(),
+    uPreviewTexture: 0,
     side: THREE.DoubleSide,
   },
   testPatternsVertexShader,
@@ -19,86 +43,78 @@ const TestPatternsShaderMaterial = shaderMaterial(
 );
 extend({ TestPatternsShaderMaterial: TestPatternsShaderMaterial });
 
-export default function Shader() {
-  const materialRef = useRef();
+function configureTexture(tex) {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+export default function Shader({ materialRef: materialRefProp }) {
+  const localMaterialRef = useRef();
+  const materialRef = materialRefProp ?? localMaterialRef;
+  const { library, upload, previewTexture } = useControls(
+    'Test shaders',
+    {
+      library: {
+        value: LIBRARY_OPTIONS[TEST_PATTERN_FILES[0]],
+        options: LIBRARY_OPTIONS,
+        label: 'From folder',
+      },
+      upload: { image: undefined, label: 'Upload image' },
+      previewTexture: { value: false, label: 'Preview texture' },
+    },
+    { collapsed: true },
+  );
+
+  const url = upload || library;
+  const [texture, setTexture] = useState(() => new THREE.Texture());
+
+  useEffect(() => {
+    if (!url) return undefined;
+    let cancelled = false;
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      url,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose();
+          return;
+        }
+        configureTexture(tex);
+        setTexture((prev) => {
+          prev?.dispose();
+          return tex;
+        });
+      },
+      undefined,
+      (err) => {
+        console.error('TestShaders: texture failed to load', url, err);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
   useFrame((state) => {
-    // console.log(state)
     if (materialRef.current) {
       materialRef.current.uTime = state.clock.elapsedTime;
-      
     }
   });
+
   return (
-    <mesh
-      // ref={meshRef}
-      receiveShadow
-      position={[0, -1.5, 0]}
-      scale={[13, 13, 0.2]}
-    >
-      <planeGeometry args={[2, 2, 64, 64]} />
-      <testPatternsShaderMaterial ref={materialRef} />
-      {/* <meshStandardMaterial color='red' wireframe /> */}
+    <mesh receiveShadow position={[0, -1.5, 0]} scale={[13, 13, 0.2]}>
+      <planeGeometry args={[4, 4, 64, 64]} />
+      <testPatternsShaderMaterial
+        ref={materialRef}
+        uTexture={texture}
+        uPreviewTexture={previewTexture ? 1 : 0}
+      />
     </mesh>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useRef } from 'react';
-
-// const meshRef = useRef();
-//   const materialRef = useRef();
-
-//   // Animate uTime each frame for waving motion (if animate is enabled)
-//   useFrame((state) => {
-//     if (materialRef.current) {
-//       if (materialRef.current) {
-//         // When animated: use elapsed time multiplied by timeSpeed
-//         // Positive timeSpeed = forward, negative = backward
-//         materialRef.current.uTime = state.clock.elapsedTime * 2;
-//         materialRef.current.uMouse = state.mouse;
-//       } else {
-//         // When not animated: keep uTime at 0 (static flag)
-//         materialRef.current.uTime = 0;
-//       }
-//     }
-//   });
-
-// const MyShaderMaterial = shaderMaterial(
-//     {
-//         uTime: 0,
-//         uColorStart: new THREE.Color('#ffffff'),
-//         uColorEnd: new THREE.Color('#000000')
-//     },
-//     vertexShader,
-//     fragmentShader);
-//     extend({ MyShaderMaterial: MyShaderMaterial });
-
-// const myshaderMaterfialRef = useRef()
-// return (
-//   <mesh receiveShadow position={[0, -1.5, 0]} scale={[10,10, 0.2]}>
-//     {/* <boxGeometry args={[1, 1, 1]} /> */}
-//     <planeGeometry args={[3, 3]} />
-//     {/* <meshStandardMaterial color='#888888' wireframe /> */}
-//     {/* <meshStandardMaterial color='yellowGreen' /> */}
-//     {/* <shaderMaterial
-//     vertexShader={vertexShader}
-//     fragmentShader={fragmentShader}
-//     /> */}
-//     <myShaderMaterial ref={myshaderMaterfialRef} />
-//   </mesh>
-// );
-// }

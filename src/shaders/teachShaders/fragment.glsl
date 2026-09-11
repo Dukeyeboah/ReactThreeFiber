@@ -14,10 +14,12 @@ void main() {
 // float designR = dist * 10.0;
 // float designR2 = (1.0-dist) * 10.0;
 
-float designXf = vUv.x * 10.0;
-float designX2f = (1.0-vUv.x) * 10.0;
+float designXf = vUv.x * 10.0; //multiply gradient by 10 so it gets to white at 1.0 mark
 float designYf = vUv.y * 10.0;
+// moving in other direction:
+float designX2f = (1.0-vUv.x) * 10.0;
 float designY2f = (1.0-vUv.y) * 10.0;
+
 float pulsef = mix(6.3, 1.0, (cos(uTime * 0.25) + 1.0) * 0.5);
 
 float patternXf = mod(designXf, 1.0 + cos(vUv.y * pulsef));
