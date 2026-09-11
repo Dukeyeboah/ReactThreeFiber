@@ -1,8 +1,17 @@
 varying vec2 vUv;
 uniform float uTime;
 uniform sampler2D uTexture;
+uniform sampler2D uPattern; // GIF motif from Leva "GIF pattern" — sample yourself, e.g. in a cell
 uniform float uPreviewTexture;
+uniform float uPreviewPattern;
 #define PI 3.1415926535897932384626433832795
+
+// // How to use uPattern as a colorable cell motif (you wire this where you want):
+//   vec3 motif = texture2D(uPattern, cellUv).rgb;
+//   float mask = motif.r; // or: dot(motif, vec3(0.299, 0.587, 0.114));
+//   vec3 coloredMotif = mix(background, gold, mask);
+//   // then mix coloredMotif into that cell's branch of your grid
+
 
 
 float random(vec2 st)
@@ -252,6 +261,10 @@ void main()
       gl_FragColor = texColor;
       return;
     }
+    if (uPreviewPattern > 0.5) {
+      gl_FragColor = texture2D(uPattern, vUv);
+      return;
+    }
     float t = uTime;
 
 
@@ -403,6 +416,16 @@ float cellColumnTag = mod(cellColumnPosition, 2.0);
 float cellRowTag = mod(cellRowPosition, 2.0);
 float innerCellTag = mod(cellColumnPosition + cellRowPosition, 2.0); 
 
+
+
+// adinkra symbols:
+// How to use uPattern as a colorable cell motif (you wire this where you want):
+  vec3 motif = texture2D(uPattern, cellUv).rgb;
+  float adinkraMask = motif.g; // or: dot(motif, vec3(0.299, 0.587, 0.114));
+  vec3 coloredMotif = mix(background, gold, adinkraMask);
+  // then mix coloredMotif into that cell's branch of your grid
+
+
 // PATTERN CREATIONS!!
 // KENTE PATTERN DESIGNS
 
@@ -540,7 +563,8 @@ float dC = steppedDiamondDistance(rotatedpC,40.0,vec2(1.0, 1.0));
 // I love topRightColor kenete patern
 if (cellTag == 0.0) {
   //  finalPatternColors = vec3(bottomLeftColor);
-  finalPatternColors = vec3(coloredStairs);
+  // finalPatternColors = vec3(coloredStairs);
+   finalPatternColors = coloredMotif*vec3(topRightColor);
 }
 // else if (cellTag == 1.0) {
 //     finalPatternColors = vec3(topRightColor);
